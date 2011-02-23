@@ -40,6 +40,10 @@ some of the quirks that arise from using it with a naive ERC. "
         (kill-buffer-query-functions nil))
     (kill-buffer buffer)))
 
+(defun znc-walk-slugp (slug)
+  (lexical-let ((slug slug))
+    (lambda (s &rest _) (eq s slug))))
+
 (defun* znc-walk-all-servers (&key (each (lambda (&rest r) (mapcar 'identity r)))
                                    (pred (lambda (&rest _) t)))
   "Walk ever defined server and user pair calling `each' every time `pred' is non-nil
