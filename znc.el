@@ -1,4 +1,4 @@
-;;; znc.el -- ZNC + ERC 
+;;; znc.el -- ZNC + ERC
 (require 'cl)
 
 ;;; Heleprs
@@ -17,9 +17,9 @@ Both functions are called as: (apply f slug host port user pass)
 `each' defaults to (mapcar 'identity ..)
 `pred' is a truth function"
     (loop for (host port users) in znc-servers
-          appending (loop for (slug user pass) in users collecting 
-            (list slug host port user pass)) into endpoints
-          finally return (loop for endpoint in endpoints 
+          appending (loop for (slug user pass) in users collecting
+            `(,slug ,host ,port ,user ,pass)) into endpoints
+          finally return (loop for endpoint in endpoints
             if (apply pred endpoint)
             collect (apply each endpoint))))
 
@@ -36,7 +36,7 @@ Both functions are called as: (apply f slug host port user pass)
 
 (defconst *znc-server-type* `(group (string  :tag "Host" :value ,*znc-server-default-host*)
                                     (integer :tag "Port" :value ,*znc-server-default-port*)
-                                    (repeat (cons :tag "Accounts" 
+                                    (repeat (cons :tag "Accounts"
                                                   ,@*znc-server-accounts-type*)))
   "A group describing a ZNC server endpoint and the accounts on it")
 
