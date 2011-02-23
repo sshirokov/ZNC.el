@@ -60,21 +60,6 @@ Both functions are called as: (apply f slug host port user pass)
       (erc-server-send (format "DETACH %s" tgt)
 		       nil tgt))))
 
-(defadvice erc-server-reconnect (after znc-erc-rename last nil activate)
-  "Maybe rename the buffer we create"
-  (let* ((wants-name (and (local-variable-p 'znc-buffer-name (erc-server-buffer))
-                          (buffer-local-value 'znc-buffer-name (erc-server-buffer))))
-         (current (erc-server-buffer))
-         (returning ad-return-value))
-    (if wants-name
-        (progn
-          (ignore-errors (znc-kill-buffer-always wants-name))
-          (with-current-buffer returning
-            (znc-set-name wants-name)
-            (rename-buffer wants-name))
-          (get-buffer wants-name))
-      returning)))
-
 (defun znc-set-name (znc-name &optional buffer)
   "Set the znc-buffer-name buffer local to znc-name in buffer or (current-buffer)"
   (let ((buffer (get-buffer (or buffer (current-buffer)))))
@@ -97,5 +82,21 @@ Both functions are called as: (apply f slug host port user pass)
     (znc-set-name buffer erc-buffer)
     (with-current-buffer erc-buffer
       (rename-buffer buffer))))
+
+;; Advice
+(defadvice erc-server-reconnect (after znc-erc-rename last nil activate)
+  "Maybe rename the buffer we create"
+  (let* ((wants-name (and (local-variable-p 'znc-buffer-name (erc-server-buffer))
+                          (buffer-local-value 'znc-buffer-name (erc-server-buffer))))
+         (current (erc-server-buffer))
+         (returning ad-return-value))
+    (if wants-name
+        (progn
+          (ignore-errors (znc-kill-buffer-always wants-name))
+          (with-current-buffer returning
+            (znc-set-name wants-name)
+            (rename-buffer wants-name))
+          (get-buffer wants-name))
+      returning)))
 
 (provide 'znc)
