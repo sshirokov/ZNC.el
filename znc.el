@@ -1,6 +1,37 @@
 ;;; znc.el -- ZNC + ERC
 (require 'cl)
 
+(defgroup znc nil
+  "ZNC IRC Bouncer assistance and opinions.
+
+This is a thin wrapper around `erc' that makes using
+the ZNC (http://en.znc.in/) IRC bouncer and irons out
+some of the quirks that arise from using it with a naive ERC. "
+  :group 'erc)
+
+;; Default vars
+(defvar *znc-server-default-host* "localhost" "Default host to use in `*znc-server-default*'")
+(defvar *znc-server-default-port* 12533 "Default port to use in `*znc-server-default*'")
+
+;; Types
+(defconst *znc-server-accounts-type* '((symbol :tag "Network Slug" :value network-slug)
+                                       (group (string :tag "Username"     :value "znc-username")
+                                              (string :tag "Password"     :value "znc-password")))
+  "A group describing an account belonging to a server")
+
+(defconst *znc-server-type* `(group (string  :tag "Host" :value ,*znc-server-default-host*)
+                                    (integer :tag "Port" :value ,*znc-server-default-port*)
+                                    (repeat (cons :tag "Accounts"
+                                                  ,@*znc-server-accounts-type*)))
+  "A group describing a ZNC server endpoint and the accounts on it")
+
+;; Customizations
+(defcustom znc-servers nil
+  "List of ZNC servers"
+  :group 'znc
+  :type `(repeat ,*znc-server-type*))
+
+
 ;;; Heleprs
 (defun znc-kill-buffer-always (&optional buffer)
   "Murderface a buffer, don't listen to nobody, son!"
@@ -23,36 +54,44 @@ Both functions are called as: (apply f slug host port user pass)
             if (apply pred endpoint)
             collect (apply each endpoint))))
 
-(defvar *znc-server-default-host* "localhost"
-  "Default host to use in `*znc-server-default*'")
+(defun zrc-detach-channel ()
+    (when (erc-server-process-alive)
+    (let ((tgt (erc-default-target)))
+      (erc-server-send (format "DETACH %s" tgt)
+		       nil tgt))))
 
-(defvar *znc-server-default-port* 12533
-  "Default port to use in `*znc-server-default*'")
+(defadvice erc-server-reconnect (after erc-znc-rename last nil activate)
+  "Maybe rename the buffer we create"
+  (let* ((wants-name (and (local-variable-p 'znc-buffer-name (erc-server-buffer))
+                          (buffer-local-value 'znc-buffer-name (erc-server-buffer))))
+         (current (erc-server-buffer))
+         (returning ad-return-value))
+    (if wants-name
+        (progn
+          (ignore-errors (kill-buffer-always wants-name))
+          (with-current-buffer returning
+            (erc-znc-set-name wants-name)
+            (rename-buffer wants-name))
+          (get-buffer wants-name))
+      returning)))
 
-(defconst *znc-server-accounts-type* '((symbol :tag "Network Slug" :value network-slug)
-                                       (group (string :tag "Username"     :value "znc-username")
-                                              (string :tag "Password"     :value "znc-password")))
-  "A group describing an account belonging to a server")
+(defun erc-znc-set-name (znc-name &optional buffer)
+  "Set the znc-buffer-name buffer local to znc-name in buffer or (current-buffer)"
+  (let ((buffer (get-buffer (or buffer (current-buffer)))))
+    (with-current-buffer buffer
+      (make-local-variable 'znc-buffer-name)
+      (setf znc-buffer-name znc-name))))
 
-(defconst *znc-server-type* `(group (string  :tag "Host" :value ,*znc-server-default-host*)
-                                    (integer :tag "Port" :value ,*znc-server-default-port*)
-                                    (repeat (cons :tag "Accounts"
-                                                  ,@*znc-server-accounts-type*)))
-  "A group describing a ZNC server endpoint and the accounts on it")
-
-;;; Custom
-(defgroup znc nil
-  "ZNC IRC Bouncer assistance and opinions.
-
-This is a thin wrapper around `erc' that makes using
-the ZNC (http://en.znc.in/) IRC bouncer and irons out
-some of the quirks that arise from using it with a naive ERC. "
-  :group 'erc)
-
-
-(defcustom znc-servers nil
-  "List of ZNC servers"
-  :group 'znc
-  :type `(repeat ,*znc-server-type*))
+(defun erc-znc (network user pass)
+  (let ((buffer (format "*irc-%s*" network))
+        (erc-buffer (erc :server "localhost"
+                         :port 12533
+                         :nick "Muta"
+                         :password (format "%s:%s" user pass))))
+    (when (get-buffer buffer)
+      (kill-buffer-always buffer))
+    (erc-znc-set-name buffer erc-buffer)
+    (with-current-buffer erc-buffer
+      (rename-buffer buffer))))
 
 (provide 'znc)
