@@ -54,13 +54,13 @@ Both functions are called as: (apply f slug host port user pass)
             if (apply pred endpoint)
             collect (apply each endpoint))))
 
-(defun zrc-detach-channel ()
+(defun znc-detach-channel ()
     (when (erc-server-process-alive)
     (let ((tgt (erc-default-target)))
       (erc-server-send (format "DETACH %s" tgt)
 		       nil tgt))))
 
-(defadvice erc-server-reconnect (after erc-znc-rename last nil activate)
+(defadvice erc-server-reconnect (after znc-erc-rename last nil activate)
   "Maybe rename the buffer we create"
   (let* ((wants-name (and (local-variable-p 'znc-buffer-name (erc-server-buffer))
                           (buffer-local-value 'znc-buffer-name (erc-server-buffer))))
@@ -68,29 +68,33 @@ Both functions are called as: (apply f slug host port user pass)
          (returning ad-return-value))
     (if wants-name
         (progn
-          (ignore-errors (kill-buffer-always wants-name))
+          (ignore-errors (znc-kill-buffer-always wants-name))
           (with-current-buffer returning
-            (erc-znc-set-name wants-name)
+            (znc-set-name wants-name)
             (rename-buffer wants-name))
           (get-buffer wants-name))
       returning)))
 
-(defun erc-znc-set-name (znc-name &optional buffer)
+(defun znc-set-name (znc-name &optional buffer)
   "Set the znc-buffer-name buffer local to znc-name in buffer or (current-buffer)"
   (let ((buffer (get-buffer (or buffer (current-buffer)))))
     (with-current-buffer buffer
       (make-local-variable 'znc-buffer-name)
       (setf znc-buffer-name znc-name))))
 
-(defun erc-znc (network user pass)
-  (let ((buffer (format "*irc-%s*" network))
-        (erc-buffer (erc :server "localhost"
-                         :port 12533
-                         :nick "Muta"
+(defun znc-erc (network)
+  (let ((server "")
+        (port 0)
+        (user "")
+        (pass "")
+        (buffer (format "*irc-%s*" network))
+        (erc-buffer (erc :server server
+                         :port port
+                         :nick user
                          :password (format "%s:%s" user pass))))
     (when (get-buffer buffer)
-      (kill-buffer-always buffer))
-    (erc-znc-set-name buffer erc-buffer)
+      (znc-kill-buffer-always buffer))
+    (znc-set-name buffer erc-buffer)
     (with-current-buffer erc-buffer
       (rename-buffer buffer))))
 
