@@ -71,21 +71,24 @@ Both functions are called as: (apply f slug host port user pass)
       (make-local-variable 'znc-buffer-name)
       (setf znc-buffer-name znc-name))))
 
-(defun znc-erc (network)
-  (let ((server "")
-        (port 0)
-        (user "")
-        (pass "")
-        (buffer (format "*irc-%s*" network))
-        (erc-buffer (erc :server server
-                         :port port
-                         :nick user
-                         :password (format "%s:%s" user pass))))
+(defun znc-erc-connect (network erc-args)
+  (let ((buffer (format "*irc-%s*" network))
+        (erc-buffer (apply erc erc-args)))
     (when (get-buffer buffer)
       (znc-kill-buffer-always buffer))
     (znc-set-name buffer erc-buffer)
     (with-current-buffer erc-buffer
       (rename-buffer buffer))))
+
+(defun znc-erc (network)
+  (let ((endpoint (car (znc-walk-all-servers :pred (znc-walk-slugp network)))))
+    (when endpoint
+      (destructuring-bind (slug host port user pass) endpoint
+        (funcall 'znc-erc-connect slug 
+                 `(:server ,host :port ,port
+                   :nick ,user :password ,(format "%s:%s" user pass)))))))
+
+
 
 ;; Advice
 (defadvice erc-server-reconnect (after znc-erc-rename last nil activate)
