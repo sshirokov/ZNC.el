@@ -73,7 +73,7 @@ Both functions are called as: (apply f slug host port user pass)
 
 (defun znc-erc-connect (network erc-args)
   (let ((buffer (format "*irc-%s*" network))
-        (erc-buffer (apply erc erc-args)))
+        (erc-buffer (apply 'erc erc-args)))
     (when (get-buffer buffer)
       (znc-kill-buffer-always buffer))
     (znc-set-name buffer erc-buffer)
