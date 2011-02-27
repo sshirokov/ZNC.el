@@ -112,6 +112,13 @@ to the matching values for the endpoint"
           (get-buffer wants-name))
       returning)))
 
+;; Hooks
+(add-hook 'erc-kill-channel-hook (defun znc-kill-channel-hook ()
+  "Hook that handles ZNC-specific channel killing behavior"
+  (when (local-variable-p 'znc-buffer-name (erc-server-buffer))
+    (when 
+        erc-detach-channel
+
 ;;; Heleprs
 (defun znc-kill-buffer-always (&optional buffer)
   "Murderface a buffer, don't listen to nobody, son!"
