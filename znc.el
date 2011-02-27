@@ -70,13 +70,15 @@ Both functions are called as: (apply f slug host port user pass)
 
 (defun znc-erc (&optional network)
   (interactive)
-  
-  (let ((endpoint (car (znc-walk-all-servers :pred (znc-walk-slugp network)))))
-    (when endpoint
-      (destructuring-bind (slug host port user pass) endpoint
-        (funcall 'znc-erc-connect slug 
-                 `(:server ,host :port ,port
-                   :nick ,user :password ,(format "%s:%s" user pass)))))))
+  (let* ((network network)
+         (endpoint (and network (car (znc-walk-all-servers :pred (znc-walk-slugp network))))))
+    (if endpoint
+        (destructuring-bind (slug host port user pass) endpoint
+          (funcall 'znc-erc-connect slug 
+                   `(:server ,host :port ,port
+                             :nick ,user :password ,(format "%s:%s" user pass))))
+      (message "Network %s not defined. Try M-x customize-group znc."
+               (symbol-name network)))))
 
 
 
@@ -107,6 +109,8 @@ Both functions are called as: (apply f slug host port user pass)
 (defun znc-walk-slugp (slug)
   (lexical-let ((slug slug))
     (lambda (s &rest _) (eq s slug))))
+
+(defun znc-endpoint-slug (s &rest _) s)
 
 (defun znc-prompt-string-or-nil (prompt &optional completions default require-match)
   (let* ((string (completing-read (concat prompt ": ") completions nil require-match default))
