@@ -59,8 +59,20 @@ some of the quirks that arise from using it with a naive ERC. "
                    (symbol-name network)))))
 
 (defun znc-discard (&optional network)
-  (interactive)
-  (message "Discarding: %s" network))
+  ;; (interactive) ;;TODO: Abstract asking for anetwork, and interactive this
+  (let* ((buffer (znc-network-server-buffer network))
+         (proc (and buffer
+                   (znc-network-server-process network)))
+         (pending (and buffer proc
+                       (erc-with-all-buffers-of-server proc
+                         (lambda () (not (equal (current-buffer) (erc-server-buffer))))
+                         (current-buffer)))))
+    (if buffer
+        (loop for kidbuffer in pending
+              do (znc-kill-buffer-always kidbuffer)
+              initially (znc-kill-buffer-always buffer)
+              finally return `(buffer ,@pending))
+      (message "%s is unknown or not currently running"))))
 
 (defun znc-all (&optional disconnect)
   "Connect to all known networks"
