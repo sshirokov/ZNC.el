@@ -33,18 +33,21 @@ some of the quirks that arise from using it with a naive ERC. "
 
 
 (defun* znc-walk-all-servers (&key (each (lambda (&rest r) (mapcar 'identity r)))
-                                   (pred (lambda (&rest _) t)))
+                                   (pred (lambda (&rest _) t))
+                                   (first nil))
   "Walk ever defined server and user pair calling `each' every time `pred' is non-nil
 
 Both functions are called as: (apply f slug host port user pass)
 `each' defaults to (mapcar 'identity ..)
-`pred' is a truth function"
-    (loop for (host port users) in znc-servers
-          appending (loop for (slug user pass) in users collecting
-            `(,slug ,host ,port ,user ,pass)) into endpoints
-          finally return (loop for endpoint in endpoints
-            if (apply pred endpoint)
-            collect (apply each endpoint))))
+`pred' is a truth function
+`first' if non-nil, return the car of the result"
+    (funcall (if first 'car 'identity)
+             (loop for (host port users) in znc-servers
+                   appending (loop for (slug user pass) in users collecting
+                     `(,slug ,host ,port ,user ,pass)) into endpoints
+                   finally return (loop for endpoint in endpoints
+                     if (apply pred endpoint)
+                     collect (apply each endpoint)))))
 
 (defun znc-detach-channel ()
     (when (erc-server-process-alive)
@@ -70,8 +73,11 @@ Both functions are called as: (apply f slug host port user pass)
 
 (defun znc-erc (&optional network)
   (interactive)
-  (let* ((network network)
-         (endpoint (and network (car (znc-walk-all-servers :pred (znc-walk-slugp network))))))
+  (let* ((networks (znc-walk-all-servers :each znc-endpoint-slug))
+         (network (when networks
+                    (znc-prompt-string-or-nil "Network" networks (car networks) t)))
+         (endpoint (when network
+                     (car (znc-walk-all-servers :pred (znc-walk-slugp network))))))
     (if endpoint
         (destructuring-bind (slug host port user pass) endpoint
           (funcall 'znc-erc-connect slug 
