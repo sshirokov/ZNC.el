@@ -15,15 +15,15 @@ some of the quirks that arise from using it with a naive ERC. "
 (defvar *znc-server-default-port* 12533 "Default port to use in `*znc-server-default*'")
 
 ;; Types
-(defconst *znc-server-accounts-type* '((symbol :tag "Network Slug" :value network-slug)
-                                       (group (string :tag "Username"     :value "znc-username")
-                                              (string :tag "Password"     :value "znc-password")))
+(defconst *znc-server-accounts-type* '((cons :tag "Account"
+                                        (symbol :tag "Network Slug" :value network-slug)
+                                        (group (string :tag "Username"     :value "znc-username")
+                                               (string :tag "Password"     :value "znc-password"))))
   "A group describing an account belonging to a server")
 
 (defconst *znc-server-type* `(group (string  :tag "Host" :value ,*znc-server-default-host*)
                                     (integer :tag "Port" :value ,*znc-server-default-port*)
-                                    (repeat (cons :tag "Accounts"
-                                                  ,@*znc-server-accounts-type*)))
+                                    (repeat :tag "Accounts on server" ,@*znc-server-accounts-type*))
   "A group describing a ZNC server endpoint and the accounts on it")
 
 ;; Customizations
