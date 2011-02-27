@@ -1,5 +1,6 @@
 ;;; znc.el -- ZNC + ERC
 (require 'cl)
+(require 'erc)
 
 (defgroup znc nil
   "ZNC IRC Bouncer assistance and opinions.
