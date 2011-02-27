@@ -88,10 +88,12 @@ to the matching values for the endpoint"
          ,@forms))))
 
 (defun znc-erc (&optional network)
+  "Connect to a configured znc network"
   (interactive)
   (let* ((networks (znc-walk-all-servers :each 'znc-endpoint-slug-name))
-         (network (when networks
-                    (znc-prompt-string-or-nil "Network" networks (car networks) t)))
+         (network (or (and network (format "%s" network))
+                      (when networks
+                        (znc-prompt-string-or-nil "Network" networks (car networks) t))))
          (endpoint (when network
                      (znc-walk-all-servers :first t :pred (znc-walk-slugp (read network))))))
         (if endpoint
@@ -101,6 +103,15 @@ to the matching values for the endpoint"
                                               :nick ,user :password ,(format "%s:%s" user pass))))
           (message "Network %s not defined. Try M-x customize-group znc."
                    (symbol-name network)))))
+
+(defun znc-all ()
+  "Connect to all known networks"
+  (interactive)
+  (loop for network in (znc-walk-all-servers :each 'znc-endpoint-slug)
+        do
+          (message "Connecting to: %s" network)
+          (znc-erc network)
+        collecting network))
 
 ;; Advice
 (defadvice erc-server-reconnect (after znc-erc-rename last nil activate)
