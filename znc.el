@@ -29,8 +29,14 @@ some of the quirks that arise from using it with a naive ERC. "
 ;; Customizations
 (defcustom znc-servers nil
   "List of ZNC servers"
+  :tag "ZNC Servers"
   :group 'znc
   :type `(repeat ,*znc-server-type*))
+
+(defcustom znc-detatch-on-kill t
+  "Detach from, rather than /part from channels when you a buffer is killed"
+  :group 'znc
+  :type 'boolean)
 
 
 (defun* znc-walk-all-servers (&key (each (lambda (&rest r) (mapcar 'identity r)))
@@ -115,9 +121,9 @@ to the matching values for the endpoint"
 ;; Hooks
 (add-hook 'erc-kill-channel-hook (defun znc-kill-channel-hook ()
   "Hook that handles ZNC-specific channel killing behavior"
-  (when (local-variable-p 'znc-buffer-name (erc-server-buffer))
-    (when 
-        erc-detach-channel
+  (and (local-variable-p 'znc-buffer-name (erc-server-buffer))
+       znc-detatch-on-kill
+       (znc-detach-channel))))
 
 ;;; Heleprs
 (defun znc-kill-buffer-always (&optional buffer)
