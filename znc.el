@@ -71,22 +71,29 @@ Both functions are called as: (apply f slug host port user pass)
     (with-current-buffer erc-buffer
       (rename-buffer buffer))))
 
+(defmacro with-endpoint (endpoint &rest forms)
+  "Wraps the remainder in a binding in which
+`slug' `host' `port' `user' `pass' are bound 
+to the matching values for the endpoint"
+  (let ((sympoint (gensym "endpoint")))
+    `(let ((,sympoint ,endpoint))
+       (destructuring-bind (slug host port user pass) ,sympoint
+         ,@forms))))
+
 (defun znc-erc (&optional network)
   (interactive)
-  (let* ((networks (znc-walk-all-servers :each znc-endpoint-slug))
+  (let* ((networks (znc-walk-all-servers :each 'znc-endpoint-slug-name))
          (network (when networks
                     (znc-prompt-string-or-nil "Network" networks (car networks) t)))
          (endpoint (when network
-                     (car (znc-walk-all-servers :pred (znc-walk-slugp network))))))
-    (if endpoint
-        (destructuring-bind (slug host port user pass) endpoint
-          (funcall 'znc-erc-connect slug 
-                   `(:server ,host :port ,port
-                             :nick ,user :password ,(format "%s:%s" user pass))))
-      (message "Network %s not defined. Try M-x customize-group znc."
-               (symbol-name network)))))
-
-
+                     (znc-walk-all-servers :first t :pred (znc-walk-slugp (read network))))))
+        (if endpoint
+            (with-endpoint endpoint
+                           (znc-erc-connect slug
+                                            `(:server ,host :port ,port
+                                              :nick ,user :password ,(format "%s:%s" user pass))))
+          (message "Network %s not defined. Try M-x customize-group znc."
+                   (symbol-name network)))))
 
 ;; Advice
 (defadvice erc-server-reconnect (after znc-erc-rename last nil activate)
@@ -116,6 +123,8 @@ Both functions are called as: (apply f slug host port user pass)
   (lexical-let ((slug slug))
     (lambda (s &rest _) (eq s slug))))
 
+(defun znc-endpoint-slug-name (&rest args)
+  (symbol-name (apply 'znc-endpoint-slug args)))
 (defun znc-endpoint-slug (s &rest _) s)
 
 (defun znc-prompt-string-or-nil (prompt &optional completions default require-match)
