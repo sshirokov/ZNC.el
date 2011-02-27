@@ -13,8 +13,11 @@ Make sure the contents of the repo, or just ./znc.el is on your load-path.
 M-x customize-group znc RET
 
 ;; Engage!
-;; It'll prompt you for a configured server, or tell you to configure one
+; It'll prompt you for a configured server, or tell you to configure one
 M-x znc-erc
+
+; Or you can make a giant sweep and connect to freaking everything
+M-x znc-all
 
 ;; Usage
 /reconnect will recycle the hell out of the server buffer.
