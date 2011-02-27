@@ -140,10 +140,19 @@ to the matching values for the endpoint"
   "Formats a buffer name for a given `network'"
   (format "*irc-%s*" network))
 
+(defun znc-network-has-buffer (network)
+  (and
+   (znc-walk-all-servers :first t :pred (znc-walk-slugp network))
+   (get-buffer (znc-network-buffer-name network))))
+
+(defun znc-network-server-process (network)
+  (let ((buffer (znc-network-server-buffer network)))
+    (when buffer
+      (with-current-buffer buffer erc-server-process))))
+
 (defun znc-network-server-buffer (network)
   "Returns a server buffer for `network' or nil"
-  (let* ((bname (znc-network-buffer-name network))
-         (buffer (get-buffer bname)))
+  (let ((buffer (znc-network-has-buffer network)))
     (when buffer
          (with-current-buffer buffer
            (erc-server-buffer)))))
