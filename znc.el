@@ -1,4 +1,6 @@
 ;;; znc.el -- ZNC + ERC
+;;; https://github.com/sshirokov/ZNC.el
+;;;;;;
 (require 'cl)
 (require 'erc)
 
@@ -38,55 +40,7 @@ some of the quirks that arise from using it with a naive ERC. "
   :group 'znc
   :type 'boolean)
 
-
-(defun* znc-walk-all-servers (&key (each (lambda (&rest r) (mapcar 'identity r)))
-                                   (pred (lambda (&rest _) t))
-                                   (first nil))
-  "Walk ever defined server and user pair calling `each' every time `pred' is non-nil
-
-Both functions are called as: (apply f slug host port user pass)
-`each' defaults to (mapcar 'identity ..)
-`pred' is a truth function
-`first' if non-nil, return the car of the result"
-    (funcall (if first 'car 'identity)
-             (loop for (host port users) in znc-servers
-                   appending (loop for (slug user pass) in users collecting
-                     `(,slug ,host ,port ,user ,pass)) into endpoints
-                   finally return (loop for endpoint in endpoints
-                     if (apply pred endpoint)
-                     collect (apply each endpoint)))))
-
-(defun znc-detach-channel ()
-    (when (erc-server-process-alive)
-    (let ((tgt (erc-default-target)))
-      (erc-server-send (format "DETACH %s" tgt)
-		       nil tgt))))
-
-(defun znc-set-name (znc-name &optional buffer)
-  "Set the znc-buffer-name buffer local to znc-name in buffer or (current-buffer)"
-  (let ((buffer (get-buffer (or buffer (current-buffer)))))
-    (with-current-buffer buffer
-      (make-local-variable 'znc-buffer-name)
-      (setf znc-buffer-name znc-name))))
-
-(defun znc-erc-connect (network erc-args)
-  (let ((buffer (format "*irc-%s*" network))
-        (erc-buffer (apply 'erc erc-args)))
-    (when (get-buffer buffer)
-      (znc-kill-buffer-always buffer))
-    (znc-set-name buffer erc-buffer)
-    (with-current-buffer erc-buffer
-      (rename-buffer buffer))))
-
-(defmacro with-endpoint (endpoint &rest forms)
-  "Wraps the remainder in a binding in which
-`slug' `host' `port' `user' `pass' are bound 
-to the matching values for the endpoint"
-  (let ((sympoint (gensym "endpoint")))
-    `(let ((,sympoint ,endpoint))
-       (destructuring-bind (slug host port user pass) ,sympoint
-         ,@forms))))
-
+;; Interactive
 (defun znc-erc (&optional network)
   "Connect to a configured znc network"
   (interactive)
@@ -113,6 +67,7 @@ to the matching values for the endpoint"
           (znc-erc network)
         collecting network))
 
+
 ;; Advice
 (defadvice erc-server-reconnect (after znc-erc-rename last nil activate)
   "Maybe rename the buffer we create"
@@ -136,21 +91,72 @@ to the matching values for the endpoint"
        znc-detatch-on-kill
        (znc-detach-channel))))
 
-;;; Heleprs
-(defun znc-kill-buffer-always (&optional buffer)
-  "Murderface a buffer, don't listen to nobody, son!"
-  (interactive "b")
-  (let ((buffer (or buffer (current-buffer)))
-        (kill-buffer-query-functions nil))
-    (kill-buffer buffer)))
+;;; Traversal
+(defun* znc-walk-all-servers (&key (each (lambda (&rest r) (mapcar 'identity r)))
+                                   (pred (lambda (&rest _) t))
+                                   (first nil))
+  "Walk ever defined server and user pair calling `each' every time `pred' is non-nil
 
+Both functions are called as: (apply f slug host port user pass)
+`each' defaults to (mapcar 'identity ..)
+`pred' is a truth function
+`first' if non-nil, return the car of the result"
+    (funcall (if first 'car 'identity)
+             (loop for (host port users) in znc-servers
+                   appending (loop for (slug user pass) in users collecting
+                     `(,slug ,host ,port ,user ,pass)) into endpoints
+                   finally return (loop for endpoint in endpoints
+                     if (apply pred endpoint)
+                     collect (apply each endpoint)))))
+
+;;; Traversal helpers
 (defun znc-walk-slugp (slug)
   (lexical-let ((slug slug))
     (lambda (s &rest _) (eq s slug))))
 
 (defun znc-endpoint-slug-name (&rest args)
   (symbol-name (apply 'znc-endpoint-slug args)))
+
 (defun znc-endpoint-slug (s &rest _) s)
+
+;;; Helper Macro(s)
+(defmacro with-endpoint (endpoint &rest forms)
+  "Wraps the remainder in a binding in which
+`slug' `host' `port' `user' `pass' are bound 
+to the matching values for the endpoint"
+  (let ((sympoint (gensym "endpoint")))
+    `(let ((,sympoint ,endpoint))
+       (destructuring-bind (slug host port user pass) ,sympoint
+         ,@forms))))
+
+;;; Heleprs
+(defun znc-kill-buffer-always (&optional buffer)
+  "Murderface a buffer, don't listen to nobody, son!"
+  (let ((buffer (or buffer (current-buffer)))
+        (kill-buffer-query-functions nil))
+    (kill-buffer buffer)))
+
+(defun znc-detach-channel ()
+    (when (erc-server-process-alive)
+    (let ((tgt (erc-default-target)))
+      (erc-server-send (format "DETACH %s" tgt)
+		       nil tgt))))
+
+(defun znc-set-name (znc-name &optional buffer)
+  "Set the znc-buffer-name buffer local to znc-name in buffer or (current-buffer)"
+  (let ((buffer (get-buffer (or buffer (current-buffer)))))
+    (with-current-buffer buffer
+      (make-local-variable 'znc-buffer-name)
+      (setf znc-buffer-name znc-name))))
+
+(defun znc-erc-connect (network erc-args)
+  (let ((buffer (format "*irc-%s*" network))
+        (erc-buffer (apply 'erc erc-args)))
+    (when (get-buffer buffer)
+      (znc-kill-buffer-always buffer))
+    (znc-set-name buffer erc-buffer)
+    (with-current-buffer erc-buffer
+      (rename-buffer buffer))))
 
 (defun znc-prompt-string-or-nil (prompt &optional completions default require-match)
   (let* ((string (completing-read (concat prompt ": ") completions nil require-match default))
