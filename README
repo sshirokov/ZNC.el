@@ -4,22 +4,17 @@ Aint that exciting?
 
 $ git clone https://sshirokov@github.com/sshirokov/ZNC.el.git
 
-Make sure the contents of the repo, or $REPO/znc.el is on your load path.
+Make sure the contents of the repo, or just ./znc.el is on your load-path.
 
+;; Install
 (require 'znc)
+
+;; Configure
 M-x customize-group znc RET
-;; Add a server, add some usernames and passwords.
-;; To use (for now, until I figure out the (interactive ..) interface):
-(znc-erc 'a-network-slug-you-confugured)
 
+;; Engage!
+;; It'll prompt you for a configured server, or tell you to configure one
+M-x znc-erc
 
-==> Or, semi-interactively:
-M-: (znc-erc 'a-network-slug-you-confugured)
-
-You should now have an *irc-network-slug* buffer that is an ERC server buffer, 
-and whatever channels you attach to on login.
-
+;; Usage
 /reconnect will recycle the hell out of the server buffer.
-
-That's more or less it for now. Since I use it, I should be developing it 
-somewhat frequently until it meets all of my needs.
