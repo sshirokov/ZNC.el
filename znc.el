@@ -32,18 +32,6 @@ some of the quirks that arise from using it with a naive ERC. "
   :type `(repeat ,*znc-server-type*))
 
 
-;;; Heleprs
-(defun znc-kill-buffer-always (&optional buffer)
-  "Murderface a buffer, don't listen to nobody, son!"
-  (interactive "b")
-  (let ((buffer (or buffer (current-buffer)))
-        (kill-buffer-query-functions nil))
-    (kill-buffer buffer)))
-
-(defun znc-walk-slugp (slug)
-  (lexical-let ((slug slug))
-    (lambda (s &rest _) (eq s slug))))
-
 (defun* znc-walk-all-servers (&key (each (lambda (&rest r) (mapcar 'identity r)))
                                    (pred (lambda (&rest _) t)))
   "Walk ever defined server and user pair calling `each' every time `pred' is non-nil
@@ -80,7 +68,9 @@ Both functions are called as: (apply f slug host port user pass)
     (with-current-buffer erc-buffer
       (rename-buffer buffer))))
 
-(defun znc-erc (network)
+(defun znc-erc (&optional network)
+  (interactive)
+  
   (let ((endpoint (car (znc-walk-all-servers :pred (znc-walk-slugp network)))))
     (when endpoint
       (destructuring-bind (slug host port user pass) endpoint
@@ -106,4 +96,25 @@ Both functions are called as: (apply f slug host port user pass)
           (get-buffer wants-name))
       returning)))
 
-(provide 'znc)
+;;; Heleprs
+(defun znc-kill-buffer-always (&optional buffer)
+  "Murderface a buffer, don't listen to nobody, son!"
+  (interactive "b")
+  (let ((buffer (or buffer (current-buffer)))
+        (kill-buffer-query-functions nil))
+    (kill-buffer buffer)))
+
+(defun znc-walk-slugp (slug)
+  (lexical-let ((slug slug))
+    (lambda (s &rest _) (eq s slug))))
+
+(defun znc-prompt-string-or-nil (prompt &optional completions default require-match)
+  (let* ((string (completing-read (concat prompt ": ") completions nil require-match default))
+         (string (if (equal string "") nil string)))
+    string))
+
+
+;;;;;;;;;;;;;;;;;;;
+;; Provide!     ;;;
+(provide 'znc)  ;;;
+;;;;;;;;;;;;;;;;;;;
