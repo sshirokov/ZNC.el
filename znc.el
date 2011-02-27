@@ -58,13 +58,19 @@ some of the quirks that arise from using it with a naive ERC. "
           (message "Network %s not defined. Try M-x customize-group znc."
                    (symbol-name network)))))
 
-(defun znc-all ()
-  "Connect to all known networks"
+(defun znc-discard (&optional network)
   (interactive)
+  (message "Discarding: %s" network))
+
+(defun znc-all (&optional disconnect)
+  "Connect to all known networks"
+  (interactive "P")
   (loop for network in (znc-walk-all-servers :each 'znc-endpoint-slug)
         do
           (message "Connecting to: %s" network)
-          (znc-erc network)
+          (if disconnect
+              (znc-discard network)
+            (znc-erc network))
         collecting network))
 
 
@@ -129,7 +135,19 @@ to the matching values for the endpoint"
        (destructuring-bind (slug host port user pass) ,sympoint
          ,@forms))))
 
-;;; Heleprs
+;;; Helpers
+(defun znc-network-buffer-name (network)
+  "Formats a buffer name for a given `network'"
+  (format "*irc-%s*" network))
+
+(defun znc-network-server-buffer (network)
+  "Returns a server buffer for `network' or nil"
+  (let* ((bname (znc-network-buffer-name network))
+         (buffer (get-buffer bname)))
+    (when buffer
+         (with-current-buffer buffer
+           (erc-server-buffer)))))
+
 (defun znc-kill-buffer-always (&optional buffer)
   "Murderface a buffer, don't listen to nobody, son!"
   (let ((buffer (or buffer (current-buffer)))
@@ -150,7 +168,7 @@ to the matching values for the endpoint"
       (setf znc-buffer-name znc-name))))
 
 (defun znc-erc-connect (network erc-args)
-  (let ((buffer (format "*irc-%s*" network))
+  (let ((buffer (znc-network-buffer-name network))
         (erc-buffer (apply 'erc erc-args)))
     (when (get-buffer buffer)
       (znc-kill-buffer-always buffer))
