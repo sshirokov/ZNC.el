@@ -36,6 +36,16 @@ some of the quirks that arise from using it with a naive ERC. "
   :group 'znc
   :type `(repeat ,*znc-server-type*))
 
+(defcustom znc-erc-connector 'erc
+  "The ERC connection function, must be compatible with `erc'"
+  :group 'znc
+  :type 'symbol)
+
+(defcustom znc-erc-ssl-connector 'erc-tls
+  "The ERC SSL connection function, must be compatible with `erc'"
+  :group 'znc
+  :type 'symbol)
+
 (defcustom znc-detatch-on-kill t
   "Detach from, rather than /part from channels when you a buffer is killed"
   :group 'znc
@@ -191,7 +201,7 @@ to the matching values for the endpoint"
   (with-endpoint endpoint
                  (message "Have endpoint: %s" endpoint)
                  (let* ((buffer (znc-network-buffer-name slug))
-                        (erc-fun (if ssl 'erc-ssl 'erc))
+                        (erc-fun (if ssl znc-erc-ssl-connector znc-erc-connector))
                         (erc-args `(:server ,host :port ,port
                                     :nick ,user :password ,(format "%s:%s" user pass)))
                         (erc-buffer (apply erc-fun erc-args)))
