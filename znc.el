@@ -52,10 +52,7 @@ some of the quirks that arise from using it with a naive ERC. "
          (endpoint (when network
                      (znc-walk-all-servers :first t :pred (znc-walk-slugp (read network))))))
         (if endpoint
-            (with-endpoint endpoint
-                           (znc-erc-connect slug
-                                            `(:server ,host :port ,port
-                                              :nick ,user :password ,(format "%s:%s" user pass))))
+            (znc-erc-connect endpoint)
           (message "Network %s not defined. Try M-x customize-group znc."
                    (symbol-name network)))))
 
@@ -123,7 +120,7 @@ Both functions are called as: (apply f slug host port user pass)
     (funcall (if first 'car 'identity)
              (loop for (host port ssl users) in znc-servers
                    appending (loop for (slug user pass) in users collecting
-                     `(,slug ,host ,port ,user ,pass)) into endpoints
+                     `(,slug ,host ,ssl ,port ,user ,pass)) into endpoints
                    finally return (loop for endpoint in endpoints
                      if (apply pred endpoint)
                      collect (apply each endpoint)))))
@@ -189,14 +186,20 @@ to the matching values for the endpoint"
       (make-local-variable 'znc-buffer-name)
       (setf znc-buffer-name znc-name))))
 
-(defun znc-erc-connect (network erc-args)
-  (let ((buffer (znc-network-buffer-name network))
-        (erc-buffer (apply 'erc erc-args)))
-    (when (get-buffer buffer)
-      (znc-kill-buffer-always buffer))
-    (znc-set-name buffer erc-buffer)
-    (with-current-buffer erc-buffer
-      (rename-buffer buffer))))
+(defun znc-erc-connect (endpoint)
+  (message "Called with: %s" endpoint)
+  (with-endpoint endpoint
+                 (message "Have endpoint: %s" endpoint)
+                 (let* ((buffer (znc-network-buffer-name slug))
+                        (erc-fun (if ssl 'erc-ssl 'erc))
+                        (erc-args `(:server ,host :port ,port
+                                    :nick ,user :password ,(format "%s:%s" user pass)))
+                        (erc-buffer (apply erc-fun erc-args)))
+                   (when (get-buffer buffer)
+                     (znc-kill-buffer-always buffer))
+                   (znc-set-name buffer erc-buffer)
+                   (with-current-buffer erc-buffer
+                     (rename-buffer buffer)))))
 
 (defun znc-prompt-string-or-nil (prompt &optional completions default require-match)
   (let* ((string (completing-read (concat prompt ": ") completions nil require-match default))
