@@ -18,13 +18,14 @@ some of the quirks that arise from using it with a naive ERC. "
 
 ;; Types
 (defconst *znc-server-accounts-type* '((cons :tag "Account"
-                                        (symbol :tag "Network Slug" :value network-slug)
+                                        (symbol :tag "Network Slug"        :value network-slug)
                                         (group (string :tag "Username"     :value "znc-username")
                                                (string :tag "Password"     :value "znc-password"))))
   "A group describing an account belonging to a server")
 
 (defconst *znc-server-type* `(group (string  :tag "Host" :value ,*znc-server-default-host*)
                                     (integer :tag "Port" :value ,*znc-server-default-port*)
+                                    (boolean :tag "SSL"  :value nil)
                                     (repeat :tag "Accounts on server" ,@*znc-server-accounts-type*))
   "A group describing a ZNC server endpoint and the accounts on it")
 
@@ -120,7 +121,7 @@ Both functions are called as: (apply f slug host port user pass)
 `pred' is a truth function
 `first' if non-nil, return the car of the result"
     (funcall (if first 'car 'identity)
-             (loop for (host port users) in znc-servers
+             (loop for (host port ssl users) in znc-servers
                    appending (loop for (slug user pass) in users collecting
                      `(,slug ,host ,port ,user ,pass)) into endpoints
                    finally return (loop for endpoint in endpoints
@@ -140,11 +141,11 @@ Both functions are called as: (apply f slug host port user pass)
 ;;; Helper Macro(s)
 (defmacro with-endpoint (endpoint &rest forms)
   "Wraps the remainder in a binding in which
-`slug' `host' `port' `user' `pass' are bound 
+`slug' `host' `port' `ssl' `user' `pass' are bound 
 to the matching values for the endpoint"
   (let ((sympoint (gensym "endpoint")))
     `(let ((,sympoint ,endpoint))
-       (destructuring-bind (slug host port user pass) ,sympoint
+       (destructuring-bind (slug host port ssl user pass) ,sympoint
          ,@forms))))
 
 ;;; Helpers
