@@ -120,7 +120,7 @@ Both functions are called as: (apply f slug host port user pass)
     (funcall (if first 'car 'identity)
              (loop for (host port ssl users) in znc-servers
                    appending (loop for (slug user pass) in users collecting
-                     `(,slug ,host ,ssl ,port ,user ,pass)) into endpoints
+                     `(,slug ,host ,port ,ssl ,user ,pass)) into endpoints
                    finally return (loop for endpoint in endpoints
                      if (apply pred endpoint)
                      collect (apply each endpoint)))))
