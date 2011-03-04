@@ -111,6 +111,7 @@ some of the quirks that arise from using it with a naive ERC. "
       returning)))
 
 ;; Hooks
+(remove-hook 'erc-kill-channel-hook 'erc-kill-channel)
 (add-hook 'erc-kill-channel-hook (defun znc-kill-channel-hook ()
   "Hook that handles ZNC-specific channel killing behavior"
   (and (local-variable-p 'znc-buffer-name (erc-server-buffer))
