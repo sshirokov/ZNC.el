@@ -110,8 +110,15 @@ some of the quirks that arise from using it with a naive ERC. "
           (get-buffer wants-name))
       returning)))
 
+(defadvice erc-kill-channel (around znc-maybe-dont-part first nil activate)
+  "Maybe don't let `erc-kill-channel' run"
+  (let ((is-znc (and (local-variable-p 'znc-buffer-name (erc-server-buffer))
+                     (buffer-local-value 'znc-buffer-name (erc-server-buffer)))))
+    (if is-znc 
+        (unless znc-detatch-on-kill ad-do-it)
+      ad-do-it)))
+
 ;; Hooks
-(remove-hook 'erc-kill-channel-hook 'erc-kill-channel)
 (add-hook 'erc-kill-channel-hook (defun znc-kill-channel-hook ()
   "Hook that handles ZNC-specific channel killing behavior"
   (and (local-variable-p 'znc-buffer-name (erc-server-buffer))
