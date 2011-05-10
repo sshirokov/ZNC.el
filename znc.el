@@ -1,5 +1,10 @@
-;;; znc.el -- ZNC + ERC
-;;; https://github.com/sshirokov/ZNC.el
+;;; znc.el --- ZNC + ERC 
+;;; 
+
+;; Author: Yaroslav Shirokov
+;; URL: https://github.com/sshirokov/ZNC.el
+;; Version: 0.0.1
+;; Package-Requires: ((cl "2.2") (erc "5.3"))
 ;;;;;;
 (require 'cl)
 (require 'erc)
@@ -229,3 +234,5 @@ to the matching values for the endpoint"
 ;; Provide!     ;;;
 (provide 'znc)  ;;;
 ;;;;;;;;;;;;;;;;;;;
+;;; znc.el ends here
+
