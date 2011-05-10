@@ -3,7 +3,7 @@
 
 ;; Author: Yaroslav Shirokov
 ;; URL: https://github.com/sshirokov/ZNC.el
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Package-Requires: ((cl "2.2") (erc "5.3"))
 ;;;;;;
 (require 'cl)
