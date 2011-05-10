@@ -57,6 +57,7 @@ some of the quirks that arise from using it with a naive ERC. "
   :type 'boolean)
 
 ;; Interactive
+;;;###autoload
 (defun znc-erc (&optional network)
   "Connect to a configured znc network"
   (interactive)
@@ -87,6 +88,7 @@ some of the quirks that arise from using it with a naive ERC. "
               finally return `(buffer ,@pending))
       (message "%s is unknown or not currently running"))))
 
+;;;###autoload
 (defun znc-all (&optional disconnect)
   "Connect to all known networks"
   (interactive "P")
