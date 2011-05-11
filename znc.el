@@ -1,5 +1,10 @@
-;;; znc.el -- ZNC + ERC
-;;; https://github.com/sshirokov/ZNC.el
+;;; znc.el --- ZNC + ERC 
+;;; 
+
+;; Author: Yaroslav Shirokov
+;; URL: https://github.com/sshirokov/ZNC.el
+;; Version: 0.0.2
+;; Package-Requires: ((cl "2.2") (erc "5.3"))
 ;;;;;;
 (require 'cl)
 (require 'erc)
@@ -52,6 +57,7 @@ some of the quirks that arise from using it with a naive ERC. "
   :type 'boolean)
 
 ;; Interactive
+;;;###autoload
 (defun znc-erc (&optional network)
   "Connect to a configured znc network"
   (interactive)
@@ -82,6 +88,7 @@ some of the quirks that arise from using it with a naive ERC. "
               finally return `(buffer ,@pending))
       (message "%s is unknown or not currently running"))))
 
+;;;###autoload
 (defun znc-all (&optional disconnect)
   "Connect to all known networks"
   (interactive "P")
@@ -229,3 +236,5 @@ to the matching values for the endpoint"
 ;; Provide!     ;;;
 (provide 'znc)  ;;;
 ;;;;;;;;;;;;;;;;;;;
+;;; znc.el ends here
+
