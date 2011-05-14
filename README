@@ -24,3 +24,5 @@ M-x znc-all
 
 By default, when you kill a channel buffer instead of /parting from the channel, you will detach from it
 This is customizable
+
+You can also get ZNC.el from the Marmalade ELPA repository. See http://marmalade-repo.org/ for instructions on using Marmalade.
