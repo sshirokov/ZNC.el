@@ -137,7 +137,7 @@ some of the quirks that arise from using it with a naive ERC. "
 (defun* znc-walk-all-servers (&key (each (lambda (&rest r) (mapcar 'identity r)))
                                    (pred (lambda (&rest _) t))
                                    (first nil))
-  "Walk ever defined server and user pair calling `each' every time `pred' is non-nil
+  "Walk every defined server and user pair calling `each' every time `pred' is non-nil
 
 Both functions are called as: (apply f slug host port user pass)
 `each' defaults to (mapcar 'identity ..)
