@@ -5,7 +5,7 @@ Aint that exciting?
 #### Quickstart 
 
 ```sh
-$ git clone https://sshirokov@github.com/sshirokov/ZNC.el.git
+$ git clone https://github.com/sshirokov/ZNC.el
 ```
 
 Make sure the contents of the repo, or just ./znc.el is on your load-path.
