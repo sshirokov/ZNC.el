@@ -8,7 +8,7 @@ Aint that exciting?
 $ git clone https://github.com/sshirokov/ZNC.el
 ```
 
-Make sure the contents of the repo, or just ./znc.el is on your load-path.
+Make sure the contents of the repo, or just [znc.el](/znc.el) is on your load-path.
 Then add this to your `init.el` or equivalent
 
 ```elisp
