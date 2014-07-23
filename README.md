@@ -40,7 +40,7 @@ M-x znc-all
 
 `/reconnect` will recycle the hell out of the server buffer.
 
-By default, when you kill a channel buffer instead of `/part`ing from the channel, you will `/detach` from it
+By default, when you kill a channel buffer instead of `/part`ing from the channel, you will `/detach` from it.
 This is customizable. 
 
 You can also get ZNC.el from the [Marmalade](http://marmalade-repo.org/) ELPA repository. See http://marmalade-repo.org/ for instructions on using Marmalade.
