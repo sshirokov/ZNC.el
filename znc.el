@@ -219,7 +219,7 @@ to the matching values for the endpoint"
                  (let* ((buffer (znc-network-buffer-name slug))
                         (erc-fun (if ssl znc-erc-ssl-connector znc-erc-connector))
                         (erc-args `(:server ,host :port ,port
-                                    :nick ,user :password ,(format "%s:%s" user pass)))
+                                    :nick ,user :password ,(format "%s/%s:%s" user slug pass)))
                         (erc-buffer (apply erc-fun erc-args)))
                    (when (get-buffer buffer)
                      (znc-kill-buffer-always buffer))
