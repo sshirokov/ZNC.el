@@ -1,8 +1,9 @@
-;;; znc.el --- ZNC + ERC 
-;;; 
+;;; znc.el --- ZNC + ERC
+;;;
 
 ;; Author: Yaroslav Shirokov
 ;; URL: https://github.com/sshirokov/ZNC.el
+;; Package-Version: 20140722.1421
 ;; Version: 0.0.3
 ;; Package-Requires: ((cl-lib "0.2") (erc "5.3"))
 ;; Also available via Marmalade http://marmalade-repo.org/
@@ -122,7 +123,7 @@ some of the quirks that arise from using it with a naive ERC. "
   "Maybe don't let `erc-kill-channel' run"
   (let ((is-znc (and (local-variable-p 'znc-buffer-name (erc-server-buffer))
                      (buffer-local-value 'znc-buffer-name (erc-server-buffer)))))
-    (if is-znc 
+    (if is-znc
         (unless znc-detatch-on-kill ad-do-it)
       ad-do-it)))
 
@@ -164,7 +165,7 @@ Both functions are called as: (apply f slug host port user pass)
 ;;; Helper Macro(s)
 (defmacro with-endpoint (endpoint &rest forms)
   "Wraps the remainder in a binding in which
-`slug' `host' `port' `ssl' `user' `pass' are bound 
+`slug' `host' `port' `ssl' `user' `pass' are bound
 to the matching values for the endpoint"
   (let ((sympoint (gensym "endpoint")))
     `(let ((,sympoint ,endpoint))
@@ -219,13 +220,14 @@ to the matching values for the endpoint"
                  (let* ((buffer (znc-network-buffer-name slug))
                         (erc-fun (if ssl znc-erc-ssl-connector znc-erc-connector))
                         (erc-args `(:server ,host :port ,port
-                                    :nick ,user :password ,(format "%s:%s" user pass)))
+                                    :nick ,user :password ,(format "%s/%s:%s" user slug pass)))
                         (erc-buffer (apply erc-fun erc-args)))
                    (when (get-buffer buffer)
                      (znc-kill-buffer-always buffer))
                    (znc-set-name buffer erc-buffer)
                    (with-current-buffer erc-buffer
                      (rename-buffer buffer)))))
+
 
 (defun znc-prompt-string-or-nil (prompt &optional completions default require-match)
   (let* ((string (completing-read (concat prompt ": ") completions nil require-match default))
@@ -238,4 +240,3 @@ to the matching values for the endpoint"
 (provide 'znc)  ;;;
 ;;;;;;;;;;;;;;;;;;;
 ;;; znc.el ends here
-
