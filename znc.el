@@ -228,7 +228,7 @@ to the matching values for the endpoint"
                      (rename-buffer buffer)))))
 
 (defun znc-prompt-string-or-nil (prompt &optional completions default require-match)
-  (let* ((string (completing-read (concat prompt ": ") completions nil require-match default))
+  (let* ((string (completing-read (concat prompt ": ") completions nil require-match nil nil default))
          (string (if (equal string "") nil string)))
     string))
 
