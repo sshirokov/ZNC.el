@@ -213,19 +213,20 @@ to the matching values for the endpoint"
       (setf znc-buffer-name znc-name))))
 
 (defun znc-erc-connect (endpoint)
-  (message "Called with: %s" endpoint)
-  (with-endpoint endpoint
-                 (message "Have endpoint: %s" endpoint)
-                 (let* ((buffer (znc-network-buffer-name slug))
-                        (erc-fun (if ssl znc-erc-ssl-connector znc-erc-connector))
-                        (erc-args `(:server ,host :port ,port
-                                    :nick ,user :password ,(format "%s:%s" user pass)))
-                        (erc-buffer (apply erc-fun erc-args)))
-                   (when (get-buffer buffer)
-                     (znc-kill-buffer-always buffer))
-                   (znc-set-name buffer erc-buffer)
-                   (with-current-buffer erc-buffer
-                     (rename-buffer buffer)))))
+  (let ((message-endpoint (append (butlast endpoint) '("***password***"))))
+    (message "Called with: %s" message-endpoint)
+    (with-endpoint endpoint
+                   (message "Have endpoint: %s" message-endpoint)
+                   (let* ((buffer (znc-network-buffer-name slug))
+                          (erc-fun (if ssl znc-erc-ssl-connector znc-erc-connector))
+                          (erc-args `(:server ,host :port ,port
+                                              :nick ,user :password ,(format "%s:%s" user pass)))
+                          (erc-buffer (apply erc-fun erc-args)))
+                     (when (get-buffer buffer)
+                       (znc-kill-buffer-always buffer))
+                     (znc-set-name buffer erc-buffer)
+                     (with-current-buffer erc-buffer
+                       (rename-buffer buffer))))))
 
 (defun znc-prompt-string-or-nil (prompt &optional completions default require-match)
   (let* ((string (completing-read (concat prompt ": ") completions nil require-match default))
