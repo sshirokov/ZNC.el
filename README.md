@@ -22,6 +22,22 @@ Configure it for your specific instance from within emacs once installed.
 M-x customize-group znc RET
 ```
 
+alternatively, put this in your init.el/configuration file..
+
+```
+(require 'znc)
+(setq znc-servers
+    '(("example.com" PORT# t
+      ((NETWORK-SLUG "USERNAME" "PASSWORD")
+       (NETWORK-SLUG "USERNAME" "PASSWORD"))
+)))
+
+```
+where example.com is your ZNC bouncer address/hostname and PORT# is the port # that the bouncer is listening on.
+NETWORK-SLUG would be freenode or whatever you defined in your znc as the network name.
+USERNAME and PASSWORD are the username and password you authenticate to ZNC with.
+
+
 Engage!
 It'll prompt you for a configured server, or tell you to configure one
 
