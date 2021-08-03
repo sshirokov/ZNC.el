@@ -1,4 +1,5 @@
 #### It's a ZNC "mode"
+[![MELPA](https://melpa.org/packages/znc-badge.svg)](https://melpa.org/#/znc)
 
 Aint that exciting?
 
@@ -59,4 +60,4 @@ M-x znc-all
 By default, when you kill a channel buffer instead of `/part`ing from the channel, you will `/detach` from it.
 This is customizable. 
 
-You can also get ZNC.el from the [Marmalade](http://marmalade-repo.org/) ELPA repository. See http://marmalade-repo.org/ for instructions on using Marmalade.
+You can also get ZNC.el from the [MELPA](https://melpa.org/#/znc) ELPA repository. See https://melpa.org/#/getting-started for instructions on using it.
