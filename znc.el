@@ -7,7 +7,7 @@
 ;; Package-Requires: ((cl-lib "0.2"))
 ;; Also available via Marmalade http://marmalade-repo.org/
 ;;;;;;
-(require 'cl)
+(require 'cl-lib)
 (require 'erc)
 
 (defgroup znc nil
@@ -83,17 +83,17 @@ some of the quirks that arise from using it with a naive ERC. "
                          (lambda () (not (equal (current-buffer) (erc-server-buffer))))
                          (current-buffer)))))
     (if buffer
-        (loop for kidbuffer in pending
+        (cl-loop for kidbuffer in pending
               do (znc-kill-buffer-always kidbuffer)
               initially (znc-kill-buffer-always buffer)
               finally return `(buffer ,@pending))
-      (message "%s is unknown or not currently running"))))
+      (message "%s is unknown or not currently running" network))))
 
 ;;;###autoload
 (defun znc-all (&optional disconnect)
   "Connect to all known networks"
   (interactive "P")
-  (loop for network in (znc-walk-all-servers :each 'znc-endpoint-slug)
+  (cl-loop for network in (znc-walk-all-servers :each 'znc-endpoint-slug)
         do
           (message "Connecting to: %s" network)
           (if disconnect
@@ -133,7 +133,7 @@ some of the quirks that arise from using it with a naive ERC. "
        (znc-detach-channel))))
 
 ;;; Traversal
-(defun* znc-walk-all-servers (&key (each (lambda (&rest r) (mapcar 'identity r)))
+(cl-defun znc-walk-all-servers (&key (each (lambda (&rest r) (mapcar 'identity r)))
                                    (pred (lambda (&rest _) t))
                                    (first nil))
   "Walk every defined server and user pair calling `each' every time `pred' is non-nil
@@ -143,10 +143,10 @@ Both functions are called as: (apply f slug host port user pass)
 `pred' is a truth function
 `first' if non-nil, return the car of the result"
     (funcall (if first 'car 'identity)
-             (loop for (host port ssl users) in znc-servers
-                   appending (loop for (slug user pass) in users collecting
+             (cl-loop for (host port ssl users) in znc-servers
+                   appending (cl-loop for (slug user pass) in users collecting
                      `(,slug ,host ,port ,ssl ,user ,pass)) into endpoints
-                   finally return (loop for endpoint in endpoints
+                   finally return (cl-loop for endpoint in endpoints
                      if (apply pred endpoint)
                      collect (apply each endpoint)))))
 
@@ -167,7 +167,7 @@ Both functions are called as: (apply f slug host port user pass)
 to the matching values for the endpoint"
   (let ((sympoint (gensym "endpoint")))
     `(let ((,sympoint ,endpoint))
-       (destructuring-bind (slug host port ssl user pass) ,sympoint
+       (cl-destructuring-bind (slug host port ssl user pass) ,sympoint
          ,@forms))))
 
 ;;; Helpers
